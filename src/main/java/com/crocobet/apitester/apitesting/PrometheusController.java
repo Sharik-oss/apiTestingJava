@@ -27,7 +27,7 @@ public class PrometheusController {
         this.meterRegistry = meterRegistry;
         this.apiService = apiService;
     }
-
+paka
     @GetMapping("/metrics")
     public void generatePrometheusMetrics() {
         List<Api> apis = apiService.findAllApis();
