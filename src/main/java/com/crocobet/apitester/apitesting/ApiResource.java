@@ -2,7 +2,7 @@ package com.crocobet.apitester.apitesting;
 
 import com.crocobet.apitester.apitesting.model.Api;
 import com.crocobet.apitester.apitesting.service.ApiService;
-import io.micrometer.core.instrument.Gauge;
+//import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/apis")
 public class ApiResource {
-    private final MeterRegistry meterRegistry;
+//    private final MeterRegistry meterRegistry;
 
     private final ApiService apiService;
 
@@ -41,70 +41,17 @@ public class ApiResource {
 
 
     @Autowired
-    public ApiResource(ApiService apiService, MeterRegistry meterRegistry) {
+    public ApiResource(ApiService apiService) {
         this.apiService = apiService;
-//        this.apiChecker = apiChecker;
-        this.meterRegistry = meterRegistry;
+//        this.apiChecker = apiChecker;, MeterRegistry meterRegistry this.meterRegistry = meterRegistry;
+
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<Api>> getAllApis(Model model) throws IOException, InterruptedException {
         List<Api> apis = apiService.findAllApis();
 
-//        List<Api> apis = apiService.findAllApis();
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
-        for (Api api : apis) {
-            List<String> urls = new ArrayList<>();
-            urls.add(api.getUrl());
-
-
-            for (String apiUrl : urls) {
-                Timer responseTimeSeconds = Timer.builder("response_time_seconds")
-                        .tag("url", api.getUrl())
-                        .register(meterRegistry);
-
-
-                Timer pingingApi = Timer.builder("pinging_api")
-                        .tag("url", api.getUrl())
-                        .register(meterRegistry);
-
-                executor.scheduleAtFixedRate(() -> {
-                    try {
-                        long startTime = System.nanoTime();
-
-                        URL url = new URI(apiUrl).toURL();
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setRequestMethod("GET");
-
-
-                        int responseCode = con.getResponseCode();
-
-
-                        con.disconnect();
-                        long endTime = System.nanoTime();
-
-                        double responseTimeMs = (endTime - startTime) / 1e6;
-
-                        double responseTime = (endTime - startTime) / 1e7;
-                        System.out.println("Response time for: " + api.getUrl() + " : " + responseTime);
-                        responseTimeSeconds.record((long) responseTime, TimeUnit.SECONDS);
-
-
-                        pingingApi.record(Duration.ofMillis((long) responseTimeMs));
-
-                        responseTime = 0;
-                        Gauge.builder("response_code_counter", () -> responseCode)
-                                .tag("url", api.getUrl())
-                                .register(meterRegistry);
-
-                    } catch (IOException | URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-                }, 0, 15, TimeUnit.SECONDS);
-
-            }
-        }
 
 //        // Update response codes for all APIs
 //        apiChecker.sendGetRequest(apis);
